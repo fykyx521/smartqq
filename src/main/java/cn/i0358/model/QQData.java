@@ -1,6 +1,8 @@
 package cn.i0358.model;
 
 
+import cn.i0358.util.BmobIntTodate;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.scienjus.smartqq.model.GroupMessage;
 
 /**
@@ -9,9 +11,8 @@ import com.scienjus.smartqq.model.GroupMessage;
 public class QQData {
 
     private long groupId;
+//    @JSONField(serializeUsing = BmobIntTodate.class)
     private long time;
-
-
 
     private String content;
     private long userId;
