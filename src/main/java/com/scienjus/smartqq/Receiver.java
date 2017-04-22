@@ -1,5 +1,6 @@
 package com.scienjus.smartqq;
 
+import cn.i0358.Main;
 import com.scienjus.smartqq.callback.MessageCallback;
 import com.scienjus.smartqq.client.SmartQQClient;
 import com.scienjus.smartqq.model.*;
@@ -50,6 +51,12 @@ public class Receiver {
                 return;
             }
             try {
+                String groupName=getGroupName(msg);
+                if(groupName.indexOf("拼车")!=-1)
+                {
+                    new Main().handlerMessage(msg);
+                }
+
                 System.out.println("[" + getTime() + "] [" + getGroupName(msg) + "] " + getGroupUserNick(msg) + "：" + msg.getContent());
             } catch (Exception e) {
                 e.printStackTrace();
