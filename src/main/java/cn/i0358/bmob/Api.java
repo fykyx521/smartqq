@@ -1,6 +1,7 @@
-package cn.i0358.util;
+package cn.i0358.bmob;
 
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.fastjson.FastJsonConverterFactory;
 
 /**
@@ -14,6 +15,15 @@ public class Api {
         {
             Retrofit retrofit = new Retrofit.Builder()
                     .addConverterFactory(FastJsonConverterFactory.create())
+                    .baseUrl("https://api.bmob.cn/")
+                    .build();
+            return retrofit;
+        }
+        public static Retrofit createRxApi()
+        {
+            Retrofit retrofit = new Retrofit.Builder()
+                    .addConverterFactory(FastJsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .baseUrl("https://api.bmob.cn/")
                     .build();
             return retrofit;

@@ -1,19 +1,14 @@
 package cn.i0358;
 
-import cn.i0358.model.ICP;
 import cn.i0358.model.QQData;
 import cn.i0358.service.CarPeopleServcie;
-import cn.i0358.util.Api;
+import cn.i0358.bmob.Api;
 import com.alibaba.fastjson.JSONObject;
 import com.scienjus.smartqq.model.GroupMessage;
-import com.scienjus.smartqq.model.Message;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.fastjson.FastJsonConverterFactory;
-
-import java.util.Date;
 
 /**
  * Created by fanyk on 2017/4/21.
