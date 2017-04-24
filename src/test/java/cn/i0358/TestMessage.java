@@ -16,6 +16,11 @@ import java.util.Date;
  */
 public class TestMessage extends TestCase {
 
+        @Override
+        public void runBare() throws Throwable {
+                super.runBare();
+        }
+
 
         public void testSer()
         {
