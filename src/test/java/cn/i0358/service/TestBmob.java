@@ -25,9 +25,15 @@ public class TestBmob extends TestCase {
 
     public void testDB()
     {
-        JSONObject obj=DB.table("QQData").where("groupId","!=",2192598935L).orderBy("createdAt",false).get();
+        JSONObject obj=DB.table("QQData").orderBy("createdAt",false).get();
         JSONArray arr=obj.getJSONArray("results");
         System.out.println(arr.size());
+        System.out.println(arr.toJSONString());
+        if(true)
+        {
+            return;
+        }
+
 
         File file=new File("a.txt");
         for (Object item: arr) {
@@ -91,8 +97,7 @@ public class TestBmob extends TestCase {
     {
 
         BmobQuery query=BmobQuery.create();
-        query.where("groupId","2192598935");
-        query.orderBy("createdAt",false);
+        query.where("groupId","2192598935").orderBy("createdAt",false).page(2,5);
         System.out.println(query.toQueryMap());
     }
 

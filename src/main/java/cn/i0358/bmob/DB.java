@@ -35,6 +35,20 @@ public class DB<T> {
         query.orderBy(fieldName,asc);
         return this;
     }
+    public DB perpage(int perPageNum) {
+        this.query.perpage(perPageNum);
+        return this;
+    }
+
+    public DB page(int pageNum, int perPageNum) {
+        this.query.page(pageNum,perPageNum);
+        return this;
+    }
+    public DB page(int pageNum)
+    {
+        this.query.page(pageNum);
+        return this;
+    }
 
     public JSONObject get()
     {
