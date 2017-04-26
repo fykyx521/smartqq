@@ -27,6 +27,45 @@ public class ICP {
     private int starttime;
     private int peoplenum;
     private int unitprice;
+    private int datafrom=1;//数据来源 1 QQ
+
+    public int getDatafrom() {
+        return datafrom;
+    }
+
+    public void setDatafrom(int datafrom) {
+        this.datafrom = datafrom;
+    }
+
+
+    public String getQq() {
+        return qq;
+    }
+
+    public void setQq(String qq) {
+        this.qq = qq;
+    }
+
+    public String getQqgroup() {
+        return qqgroup;
+    }
+
+    public void setQqgroup(String qqgroup) {
+        this.qqgroup = qqgroup;
+    }
+
+    public String getQqtext() {
+        return qqtext;
+    }
+
+    public void setQqtext(String qqtext) {
+        this.qqtext = qqtext;
+    }
+
+    private String qq;
+    private String qqgroup;
+    private String qqtext;
+
 
 
     public int getFrom() {

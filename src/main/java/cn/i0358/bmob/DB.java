@@ -2,6 +2,7 @@ package cn.i0358.bmob;
 
 import com.alibaba.fastjson.JSONObject;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
@@ -83,6 +84,48 @@ public class DB<T> {
             e.printStackTrace();
         }
         return false;
+    }
+    public void save(final Object obj, final OnSave save)
+    {
+        try {
+
+            Retrofit api = Api.createRxApi();
+            BmobService bmobservice = api.create(BmobService.class);
+            final Call<JSONObject> json = bmobservice.save(this.table, obj);
+            json.enqueue(new Callback<JSONObject>() {
+                @Override
+                public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
+                    if(response.code()==201)
+                    {
+                        System.out.println("保存icp成功");
+                        if(save!=null)
+                        {
+
+                            save.success(obj);
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<JSONObject> call, Throwable throwable) {
+                    System.out.println("保存icp失败");
+                    throwable.printStackTrace();
+                    if(save!=null)
+                    {
+
+                        save.error(obj,throwable);
+                    }
+                }
+            });
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    interface OnSave<T>{
+        public void success(T t);
+        public void error(T t,Throwable throwable);
     }
 
 }

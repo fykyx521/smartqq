@@ -1,6 +1,9 @@
 package cn.i0358;
 
+import cn.i0358.bmob.DB;
+import cn.i0358.model.ICP;
 import cn.i0358.model.QQData;
+import cn.i0358.model.QQTextParse;
 import cn.i0358.service.CarPeopleServcie;
 import cn.i0358.bmob.Api;
 import com.alibaba.fastjson.JSONObject;
@@ -25,6 +28,18 @@ public class Service {
         public void handle(QQData data){
                 data=this.filter(data);
                 this.save(data);
+                try{
+                        QQTextParse parse=QQTextParse.create(data.getContent());
+                        ICP icp=parse.toIcp();
+                        icp.setQq(data.getUserId()+"");
+                        icp.setQqgroup(data.getGroupId()+"");
+                        icp.setQqtext(data.getContent());
+                        icp.setDatafrom(1);
+                        DB.table("icp").save(icp,null);
+                }catch (Exception e)
+                {
+                        e.printStackTrace();
+                }
         }
 
 

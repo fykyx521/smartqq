@@ -1,5 +1,6 @@
 package cn.i0358.model;
 
+import cn.i0358.util.ChineseNumber;
 import org.joda.time.DateTimeFieldType;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -29,6 +30,10 @@ public class QQTextParse {
         this.content=content;
         this.parse();
     }
+    public static QQTextParse create(String content)
+    {
+        return new QQTextParse(content);
+    }
 
     private void parse()
     {
@@ -39,12 +44,27 @@ public class QQTextParse {
         this.parsedate();
     }
 
+    public ICP toIcp()
+    {
+        ICP icp=new ICP();
+        icp.setStartdate(this.sdata.getDate());
+        icp.setStarttime(this.sdata.getTime());
+        icp.setPeoplenum(this.pnum);
+        icp.setCptype(this.cptype);
+        icp.setUnitprice(0);
+        icp.setFrom(this.from.getAddr());
+        icp.setTo(this.to.getAddr());
+        return icp;
+    }
+
+
+
     /**
      *   解析时间
       */
     private void parsedate()
     {
-
+        this.sdata=SDate.create(this.content);
     }
 
     private void parsepeonum()
@@ -135,7 +155,7 @@ public class QQTextParse {
     @Override
     public String toString() {
         String cstr=this.cptype==1?"车找人":"人找车";
-        return cstr+ "人数:"+this.pnum+"---"+this.from+"到"+this.to+ "电话"+this.phone+" :"+this.pnum;
+        return cstr+ "人数:"+this.pnum+"---"+this.from+"到"+this.to+ "电话"+this.phone+"人数 :"+this.pnum+" 时间"+this.sdata;
 
     }
 
@@ -147,6 +167,20 @@ public class QQTextParse {
         {
             this.index=index;
             this.adds=adds;
+        }
+        public int getAddr()
+        {
+//            <option value="141124">临县</option>
+//            <option value="140100">太原</option>
+//            <option value="141102">离石</option>
+            int result=0;
+            switch (this.adds)
+            {
+                case "临县": result=141124;break;
+                case "太原": result=140100;break;
+                case "离石":result=141102;break;
+            }
+            return result;
         }
 
         @Override
@@ -160,9 +194,7 @@ public class QQTextParse {
         }
     }
     public static class SDate{
-        Date sdate;
-        int  dtime;//出发时间
-        int  mda;// 上午 1  中午2  下午3
+        int  mda=0;// 上午 1  中午2  下午3
         String content;
         LocalDate date=LocalDate.now();
         LocalTime time=LocalTime.now();
@@ -171,30 +203,44 @@ public class QQTextParse {
             this.content=content;
             this.parse();
         }
+        public Date getDate(){
+            return this.date.toDate();
+        }
+        public int getTime()
+        {
+            return this.time.getHourOfDay();
+        }
+
         public static SDate create(String content)
         {
             return new SDate(content);
         }
-        public void parse()
+        private void parse()
         {
             this.parseDay();
             this.parseTime();
         }
         private void parseDay()
         {
-            if(this.content.contains("明天")) {
-                this.date.plusDays(1);
+            if(this.content.contains("明")) {
+                this.date=this.date.plusDays(1);
             }
             if(this.content.contains("后天")) {
-                this.date.plusDays(2);
+                this.date=this.date.plusDays(2);
             }
         }
+
         private void parseTime()
         {
             if(this.content.contains("早上"))
             {
                 this.mda=1;
             }
+            if(this.content.contains("早"))
+            {
+                this.mda=1;
+            }
+
             if(this.content.contains("午饭")||this.content.contains("中午"))
             {
                 this.mda=2;
@@ -203,24 +249,37 @@ public class QQTextParse {
             {
                 this.mda=3;
             }
-            Pattern pattern=Pattern.compile("(\\S)(点)");
+            Pattern pattern=Pattern.compile("(\\S\\S)(点)");
             Matcher matcher=pattern.matcher(this.content);
             if(matcher.find())
             {
-                Matcher matcher1=Pattern.compile("(\\d)$").matcher(matcher.group());
+                String dian=matcher.group();
+                System.out.println("点:"+dian);
+                Matcher matcher1=Pattern.compile("\\d{1,2}").matcher(dian);
                 if(matcher1.find())
                 {
-                    String group=matcher.group();
+                    String group=matcher1.group();
                     int stime=Integer.parseInt(group);
-                    System.out.println(stime);
-                    this.time.withField(DateTimeFieldType.hourOfDay(),stime);
+                    System.out.println("s1---"+stime);
+                    this.time=this.time.withField(DateTimeFieldType.hourOfDay(),stime);
+                }else{
+                    int stime= ChineseNumber.chineseNumber2Int(dian);
+                    System.out.println("s2-----"+stime);
+                    System.out.println(this.time.toString());
+                    this.time=this.time.withField(DateTimeFieldType.hourOfDay(),stime);
+
+                    System.out.println(this.time.toString());
                 }
 
 
             }
 
         }
-
+        private String replace(String dian)
+        {
+//            String[] hanzi=new String[]{"十二","十一","十","四",}
+            return "";
+        }
         @Override
         public String toString() {
             return this.date.toString()+"-------"+this.time.toString();
