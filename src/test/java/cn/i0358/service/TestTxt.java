@@ -1,6 +1,7 @@
 package cn.i0358.service;
 
 import cn.i0358.model.QQTextParse;
+import cn.i0358.util.ChineseNumber;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
@@ -73,4 +74,30 @@ public class TestTxt extends TestCase {
 //        System.out.println(Integer.parseInt("。1位"));
 
     }
+    public void testDian()
+    {
+        Matcher matcher3=Pattern.compile("\\d{1,2}").matcher("12点");
+        if(matcher3.find())
+        {
+            System.out.println(matcher3.group());
+            return;
+        }
+        String hanzi="十三点";
+        int num=ChineseNumber.chineseNumber2Int("12点");
+        System.out.println(num);
+
+        Pattern pattern=Pattern.compile("(\\S\\S)(点)");
+        Matcher matcher=pattern.matcher("13点");
+        if(matcher.find())
+        {
+            System.out.println(matcher.group());
+        }
+    }
+    public void testDian2()
+    {
+        QQTextParse.SDate date=QQTextParse.SDate.create("明天12点走");
+        System.out.println(date.toString());
+//        System.out.println(LocalTime.now().withField(DateTimeFieldType.hourOfDay(),12).toString());
+    }
+
 }

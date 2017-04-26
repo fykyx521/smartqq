@@ -65,7 +65,7 @@ public class DB<T> {
         return null;
     }
 
-    public boolean insert(Object obj)
+    public boolean save(Object obj)
     {
         try{
 

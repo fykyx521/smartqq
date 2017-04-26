@@ -4,6 +4,7 @@ import cn.i0358.bmob.DB;
 import cn.i0358.model.ICP;
 import cn.i0358.bmob.Api;
 import cn.i0358.bmob.BmobQuery;
+import cn.i0358.model.QQTextParse;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.io.Files;
@@ -72,6 +73,18 @@ public class TestBmob extends TestCase {
         icp.setUnitprice(100);
         boolean insert=DB.table("icp").insert(icp);
         System.out.println(insert);
+    }
+
+    public void testInsert2() throws InterruptedException {
+        String content="太原回临县短4个，7-8点，车找人18035813587";
+        QQTextParse parse=QQTextParse.create(content);
+        ICP icp=parse.toIcp();
+        icp.setQq("qq");
+        icp.setQqgroup("qq2");
+        icp.setQqtext(content);
+        DB.table("icp").save(icp,null);
+        Thread.sleep(3000);
+//        System.out.println(insert);
     }
 
     public void testList()
