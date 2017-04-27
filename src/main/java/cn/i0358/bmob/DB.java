@@ -1,15 +1,18 @@
 package cn.i0358.bmob;
 
+import cn.i0358.model.ICP;
 import com.alibaba.fastjson.JSONObject;
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.Result;
 
 /**
  * Created by fanyk on 2017/4/24.
  */
-public class DB<T> {
+public class DB {
 
     private BmobQuery query;
     private String table;
@@ -69,7 +72,7 @@ public class DB<T> {
     {
         try{
 
-            Retrofit api=Api.createRxApi();
+            Retrofit api=Api.createApi();
             BmobService bmobservice=api.create(BmobService.class);
             Call<JSONObject> json=bmobservice.save(this.table, obj);
             Response<JSONObject> result=json.execute();
@@ -85,42 +88,13 @@ public class DB<T> {
         }
         return false;
     }
-    public void save(final Object obj, final OnSave save)
+    public Observable<Result<JSONObject>> saveRx(final Object obj)
     {
-        try {
 
             Retrofit api = Api.createRxApi();
             BmobService bmobservice = api.create(BmobService.class);
-            final Call<JSONObject> json = bmobservice.save(this.table, obj);
-            json.enqueue(new Callback<JSONObject>() {
-                @Override
-                public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
-                    if(response.code()==201)
-                    {
-                        System.out.println("保存icp成功");
-                        if(save!=null)
-                        {
-
-                            save.success(obj);
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<JSONObject> call, Throwable throwable) {
-                    System.out.println("保存icp失败");
-                    throwable.printStackTrace();
-                    if(save!=null)
-                    {
-
-                        save.error(obj,throwable);
-                    }
-                }
-            });
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+            final Observable<Result<JSONObject>> json = bmobservice.saveRx(this.table, obj);
+            return json;
     }
 
     interface OnSave<T>{

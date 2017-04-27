@@ -77,7 +77,7 @@ public class SmartQQClient implements Closeable {
                             pollMessage(callback);
                         } catch (RequestException e) {
                             //忽略SocketTimeoutException
-                            e.printStackTrace();
+//                            e.printStackTrace();
                             if (!(e.getCause() instanceof SocketTimeoutException)) {
 
                                 LOGGER.error(e.getMessage());

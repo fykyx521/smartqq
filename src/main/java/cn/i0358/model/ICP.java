@@ -24,6 +24,9 @@ public class ICP {
     @JSONField(serializeUsing = BmobDateSerializer.class)
     private Date startdate;
 
+
+
+    private Long phone;
     private int starttime;
     private int peoplenum;
     private int unitprice;
@@ -124,6 +127,20 @@ public class ICP {
 
     public void setCptype(int cptype) {
         this.cptype = cptype;
+    }
+    public Long getPhone() {
+        return phone;
+    }
+
+    public void setPhone(Long phone) {
+        this.phone = phone;
+    }
+
+    public void qqgrouptext(String qq,String qqgroup,String content)
+    {
+        this.qq=qq;
+        this.qqgroup=qqgroup;
+        this.qqtext=content;
     }
 
 

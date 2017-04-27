@@ -1,11 +1,18 @@
 package cn.i0358;
 
+import cn.i0358.bmob.DB;
+import cn.i0358.model.ICP;
 import cn.i0358.model.QQData;
-import cn.i0358.service.CarPeopleServcie;
+import cn.i0358.model.QQTextParse;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.scienjus.smartqq.model.GroupMessage;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import retrofit2.adapter.rxjava2.Result;
 
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.util.Date;
 
 /**
@@ -14,16 +21,56 @@ import java.util.Date;
 public class Main {
 
 
-     public void handlerMessage(GroupMessage message)
+
+    public void handlerMessage(GroupMessage message)
      {
-//          if(message.getContent().indexOf("车找人"))
-          new Service().handle(message);
+         Observable.just(message)
+                .observeOn(Schedulers.newThread())
+                .map((GroupMessage s)->{ System.out.println("map thread   "+Thread.currentThread().getName()); return QQTextParse.create(s.getContent());})
+                .map((QQTextParse qtp)->{ICP icp=qtp.toIcp();  icp.qqgrouptext(message.getUserId()+"",message.getGroupId()+"",message.getContent()); return icp;})
+                .flatMap((ICP icp2)->{System.out.println("flatmap thread  "+Thread.currentThread().getName()); return DB.table("icp").saveRx(icp2); })
+                .map((Result<JSONObject> obj)->{
+                    System.out.println("map1 thread   "+Thread.currentThread().getName());
+                    if(!obj.isError()) {
+                        return QQData.create(message);
+                    }
+                    return null;
+
+                })
+                .flatMap((QQData data)->
+                 {if(data!=null){
+                     return DB.table("QQdata").saveRx(data);
+                  } return Observable.empty();
+                 })
+//                .observeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io())
+                .subscribe(new Observer<Result<JSONObject>>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                System.out.println("sub thread"+Thread.currentThread().getName());
+                System.out.println("sub");
+            }
+
+            @Override
+            public void onNext(Result<JSONObject> value) {
+                System.out.println("next thread"+Thread.currentThread().getName());
+                System.out.println("next"+value.response().code());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                System.out.println("error thread"+Thread.currentThread().getName());
+                System.out.println("error"+e.toString());
+            }
+
+            @Override
+            public void onComplete() {
+                System.out.println("complete thread"+Thread.currentThread().getName());
+                System.out.println("complete");
+            }
+        });
      }
 
-     public void handlerMessage(QQData data)
-     {
-         new Service().handle(data);
-     }
 
      public static void main(String args[])
      {

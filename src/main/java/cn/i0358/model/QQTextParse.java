@@ -21,7 +21,7 @@ public class QQTextParse {
     private FromTo from;
     private FromTo to;
 
-    private String phone;
+    private Long phone;
     private int pnum=1;//人数
     private SDate sdata;
 
@@ -54,6 +54,7 @@ public class QQTextParse {
         icp.setUnitprice(0);
         icp.setFrom(this.from.getAddr());
         icp.setTo(this.to.getAddr());
+        icp.setPhone(this.phone);
         return icp;
     }
 
@@ -106,7 +107,9 @@ public class QQTextParse {
         Matcher mt=datePattern.matcher(this.content);
         if(mt.find())
         {
-            this.phone=mt.group();
+            this.phone=Long.parseLong(mt.group());
+        }else{
+            throw new RuntimeException("电话号码不符合");
         }
     }
 
@@ -149,6 +152,19 @@ public class QQTextParse {
             this.cptype=1;
             return;
         }
+        if(this.content.contains("私家车"))
+        {
+            this.cptype=1;
+            return;
+        }
+        if(this.content.contains("有车没"))
+        {
+            this.cptype=0;
+            return;
+        }
+
+
+
         throw new RuntimeException("当前信息不符合"+this.content);
     }
 
@@ -224,9 +240,34 @@ public class QQTextParse {
         {
             if(this.content.contains("明")) {
                 this.date=this.date.plusDays(1);
+                return;
             }
             if(this.content.contains("后天")) {
                 this.date=this.date.plusDays(2);
+                return;
+            }
+            if(this.content.contains("号"))
+            {
+                Matcher matcher1=Pattern.compile("\\d{1,2}号").matcher(content);
+                int day=0;
+                if(matcher1.find())
+                {
+                    String hao=matcher1.group();
+                    Matcher matcher2=Pattern.compile("\\d{1,2}").matcher(hao);
+                    if(matcher2.find())
+                    {
+                        String group=matcher2.group();
+                        day=Integer.parseInt(group);
+                    }else{
+                        day= ChineseNumber.chineseNumber2Int(hao);
+                    }
+                    if(day<this.date.dayOfMonth().get())
+                    {
+                        this.date=this.date.plusMonths(1).withField(DateTimeFieldType.dayOfMonth(),day);
+                    }else{
+                        this.date=this.date.withField(DateTimeFieldType.dayOfMonth(),day);
+                    }
+                }
             }
         }
 
@@ -251,29 +292,50 @@ public class QQTextParse {
             }
             Pattern pattern=Pattern.compile("(\\S\\S)(点)");
             Matcher matcher=pattern.matcher(this.content);
-            if(matcher.find())
+            int stime=0;
+            boolean match=matcher.find();
+            if(match)
             {
                 String dian=matcher.group();
-                System.out.println("点:"+dian);
                 Matcher matcher1=Pattern.compile("\\d{1,2}").matcher(dian);
                 if(matcher1.find())
                 {
                     String group=matcher1.group();
-                    int stime=Integer.parseInt(group);
-                    System.out.println("s1---"+stime);
-                    this.time=this.time.withField(DateTimeFieldType.hourOfDay(),stime);
+                    stime=Integer.parseInt(group);
                 }else{
-                    int stime= ChineseNumber.chineseNumber2Int(dian);
-                    System.out.println("s2-----"+stime);
-                    System.out.println(this.time.toString());
-                    this.time=this.time.withField(DateTimeFieldType.hourOfDay(),stime);
-
-                    System.out.println(this.time.toString());
+                    stime= ChineseNumber.chineseNumber2Int(dian);
                 }
+            }else{
+                if(mda==2)
+                {
+                    stime=13;
+//                    this.time=this.time.withField(DateTimeFieldType.hourOfDay(),13);
+                }
+                if(this.content.contains("现在走")||this.content.contains("随时走"))
+                {
+                    int minuteOfHour=this.time.getMinuteOfHour();
+                    stime=this.time.getHourOfDay()+1;
 
-
+                }
             }
-
+            if(stime<10&&this.mda>1)// 中午或者下午
+            {
+                stime=12+stime;
+            }
+            if(stime<=4&&this.mda==0)
+            {
+                stime=12+stime;
+            }
+            if(this.date.getDayOfMonth()==LocalDate.now().getDayOfMonth())//如果是今天
+            {
+                int hour=LocalTime.now().getHourOfDay();
+                if(hour>10&&stime<10) // 5 6点出发 但是没说今天
+                {
+                    stime+=12;
+                }
+            }
+            System.out.println(stime);
+            this.time=this.time.withField(DateTimeFieldType.hourOfDay(),stime);
         }
         private String replace(String dian)
         {

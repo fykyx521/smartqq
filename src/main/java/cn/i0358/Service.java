@@ -35,7 +35,7 @@ public class Service {
                         icp.setQqgroup(data.getGroupId()+"");
                         icp.setQqtext(data.getContent());
                         icp.setDatafrom(1);
-                        DB.table("icp").save(icp,null);
+                        DB.table("icp").save(icp);
                 }catch (Exception e)
                 {
                         e.printStackTrace();

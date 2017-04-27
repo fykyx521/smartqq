@@ -14,6 +14,13 @@ public class GroupMessage {
 
     private long groupId;
 
+    public GroupMessage(long groupId, long time, long userId, String content) {
+        this.groupId = groupId;
+        this.time = time;
+        this.userId = userId;
+        this.content = content;
+    }
+
     private long time;
 
     private String content;
