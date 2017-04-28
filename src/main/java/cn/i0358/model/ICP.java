@@ -27,7 +27,7 @@ public class ICP {
 
 
     private Long phone;
-    private int starttime;
+    private long starttime;
     private int peoplenum;
     private int unitprice;
     private int datafrom=1;//数据来源 1 QQ
@@ -97,11 +97,11 @@ public class ICP {
         this.startdate = startdate;
     }
 
-    public int getStarttime() {
+    public long getStarttime() {
         return starttime;
     }
 
-    public void setStarttime(int starttime) {
+    public void setStarttime(long starttime) {
         this.starttime = starttime;
     }
 

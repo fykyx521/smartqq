@@ -2,6 +2,7 @@ package cn.i0358;
 
 import cn.i0358.model.QQTextParse;
 import junit.framework.TestCase;
+import org.joda.time.DateTime;
 
 import java.time.LocalDate;
 
@@ -37,5 +38,14 @@ public class TestStartDate extends TestCase{
         QQTextParse.SDate date2=QQTextParse.SDate.create("今天午饭后出发，（4月27号），太原回临县，车找人，预定18734911186\n");
         assertEquals(13,date2.getTime());
         assertEquals(LocalDate.now().plusDays(1).getDayOfMonth(),date2.getDate().getDate());
+    }
+
+    public void testStartDate2()
+    {
+        QQTextParse.SDate date2=QQTextParse.SDate.create("今天午饭后出发，太原回临县，车找人，预定18734911186\n");
+        assertEquals(13,date2.getTime());
+        System.out.println(DateTime.now().withSecondOfMinute(0).withMinuteOfHour(0).toDate());
+        System.out.println(date2.getDate());
+        assertEquals(DateTime.now().withHourOfDay(13).withSecondOfMinute(0).withMinuteOfHour(0).toDate(),date2.getDate());
     }
 }

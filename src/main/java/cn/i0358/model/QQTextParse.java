@@ -1,11 +1,11 @@
 package cn.i0358.model;
 
 import cn.i0358.util.ChineseNumber;
-import org.joda.time.DateTimeFieldType;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
+import org.joda.time.*;
 
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,8 +47,9 @@ public class QQTextParse {
     public ICP toIcp()
     {
         ICP icp=new ICP();
-        icp.setStartdate(this.sdata.getDate());
-        icp.setStarttime(this.sdata.getTime());
+        Date startDate=this.sdata.getDate();
+        icp.setStartdate(startDate);
+        icp.setStarttime(startDate.getTime());
         icp.setPeoplenum(this.pnum);
         icp.setCptype(this.cptype);
         icp.setUnitprice(0);
@@ -163,8 +164,6 @@ public class QQTextParse {
             return;
         }
 
-
-
         throw new RuntimeException("当前信息不符合"+this.content);
     }
 
@@ -220,7 +219,9 @@ public class QQTextParse {
             this.parse();
         }
         public Date getDate(){
-            return this.date.toDate();
+//            LocalDateTime
+            DateTime time=new DateTime();
+            return time.withDate(this.date).withHourOfDay(this.time.getHourOfDay()).withMinuteOfHour(0).withSecondOfMinute(0).toDate();
         }
         public int getTime()
         {
@@ -311,11 +312,10 @@ public class QQTextParse {
                     stime=13;
 //                    this.time=this.time.withField(DateTimeFieldType.hourOfDay(),13);
                 }
-                if(this.content.contains("现在走")||this.content.contains("随时走"))
+                if(this.content.contains("现在")||this.content.contains("随时走"))
                 {
                     int minuteOfHour=this.time.getMinuteOfHour();
                     stime=this.time.getHourOfDay()+1;
-
                 }
             }
             if(stime<10&&this.mda>1)// 中午或者下午
@@ -326,6 +326,11 @@ public class QQTextParse {
             {
                 stime=12+stime;
             }
+            if(stime==0&&this.mda==1)
+            {
+                stime=8;
+            }
+
             if(this.date.getDayOfMonth()==LocalDate.now().getDayOfMonth())//如果是今天
             {
                 int hour=LocalTime.now().getHourOfDay();

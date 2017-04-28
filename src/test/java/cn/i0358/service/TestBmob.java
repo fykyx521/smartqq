@@ -18,6 +18,9 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import junit.framework.TestCase;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -26,6 +29,7 @@ import retrofit2.adapter.rxjava2.Result;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -68,7 +72,11 @@ public class TestBmob extends TestCase {
         System.out.println(obj.toJSONString());
     }
 
-
+    public void testTime()
+    {
+        DateTime time= LocalDate.now().toDateTime(LocalTime.now());
+        System.out.println(time);
+    }
 
 
     public void testInsert()
@@ -104,7 +112,7 @@ public class TestBmob extends TestCase {
 //        icp.setQqtext(content);
 //        icp.setTest()
         System.out.println(Thread.currentThread().getName());
-        GroupMessage message=new GroupMessage(1,2,3,"30号回临县下午4点多走提前连系电话15835132731");
+        GroupMessage message=new GroupMessage(1,2,3,"太原回离石。三人找车。4点走13663684042");
         Observable.just(message)
                 .observeOn(Schedulers.newThread())
                 .map((GroupMessage s)->{ System.out.println("map thread:"+Thread.currentThread().getName()); return QQTextParse.create(s.getContent());})
