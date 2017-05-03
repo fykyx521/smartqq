@@ -315,14 +315,14 @@ public class QQTextParse {
                 if(this.content.contains("现在")||this.content.contains("随时走"))
                 {
                     int minuteOfHour=this.time.getMinuteOfHour();
-                    stime=this.time.getHourOfDay()+1;
+                    stime=this.time.getHourOfDay()+2;
                 }
             }
             if(stime<10&&this.mda>1)// 中午或者下午
             {
                 stime=12+stime;
             }
-            if(stime<=4&&this.mda==0)
+            if(stime<=4&&this.mda==0&&stime>=0)
             {
                 stime=12+stime;
             }
@@ -330,6 +330,11 @@ public class QQTextParse {
             {
                 stime=8;
             }
+            if(stime==0&&this.mda==0)
+            {
+                stime=this.time.getHourOfDay()+2;
+            }
+
 
             if(this.date.getDayOfMonth()==LocalDate.now().getDayOfMonth())//如果是今天
             {
