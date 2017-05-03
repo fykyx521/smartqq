@@ -54,7 +54,32 @@ public class DB {
         return this;
     }
 
-    public JSONObject get()
+    /**
+     *  获取一行记录
+     * @return
+     */
+    public Observable<Result<JSONObject>> first()
+    {
+        this.page(1,1);
+        Observable<Result<JSONObject>> json= this.rxget();
+        return json;
+    }
+
+    public Observable<Result<JSONObject>> rxget()
+    {
+        try {
+            Retrofit api=Api.createRxApi();
+            BmobService bmobservice=api.create(BmobService.class);
+            Observable<Result<JSONObject>> jsonarr=bmobservice.rxlist(this.table,this.query.toQueryMap());
+            return jsonarr;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+     public JSONObject get()
     {
         try {
             Retrofit api=Api.createRxApi();
@@ -67,6 +92,8 @@ public class DB {
         }
         return null;
     }
+
+
 
     public boolean save(Object obj)
     {
@@ -90,7 +117,6 @@ public class DB {
     }
     public Observable<Result<JSONObject>> saveRx(final Object obj)
     {
-
             Retrofit api = Api.createRxApi();
             BmobService bmobservice = api.create(BmobService.class);
             final Observable<Result<JSONObject>> json = bmobservice.saveRx(this.table, obj);

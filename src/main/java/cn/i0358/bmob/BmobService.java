@@ -52,7 +52,7 @@ public interface BmobService<T> {
             "Content-Type: application/json"
     })
     @GET("1/classes/{tableName}")
-    public Observable<JSONObject> rxlist(@Path("tableName") String tableName,@QueryMap Map<String,String> map);
+    public Observable<Result<JSONObject>> rxlist(@Path("tableName") String tableName,@QueryMap Map<String,String> map);
 
 
 

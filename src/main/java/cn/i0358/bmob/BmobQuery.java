@@ -87,7 +87,7 @@ public class BmobQuery {
             perPageNum = 1000;
         }
         this.limit = perPageNum;
-        this.skip = this.limit * pageNum;
+        this.skip = this.limit * pageNum-1;
         return this;
     }
 

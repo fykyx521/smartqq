@@ -5,14 +5,24 @@ import cn.i0358.model.ICP;
 import cn.i0358.model.QQData;
 import cn.i0358.model.QQTextParse;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.scienjus.smartqq.model.Group;
 import com.scienjus.smartqq.model.GroupMessage;
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
+import org.joda.time.Interval;
+import org.joda.time.LocalDateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import retrofit2.adapter.rxjava2.Result;
 
+import java.time.Period;
 import java.util.Date;
 
 /**
@@ -24,9 +34,44 @@ public class Main {
 
     public void handlerMessage(GroupMessage message)
      {
-         Observable.just(message)
-                .observeOn(Schedulers.newThread())
-                .map((GroupMessage s)->{ System.out.println("map thread   "+Thread.currentThread().getName()); return QQTextParse.create(s.getContent());})
+         Observable<Result<JSONObject>> result=DB.table("icp").where("qq",message.getUserId()+"").first();
+         result.observeOn(Schedulers.newThread())
+         .filter(new Predicate<Result<JSONObject>>() {
+             @Override
+             public boolean test(Result<JSONObject> jsonObjectResult) throws Exception {
+                 System.out.println("filter");
+
+                 if(jsonObjectResult.isError())
+                 {
+                     return true;
+                 }else{
+                     JSONObject obj=jsonObjectResult.response().body();
+                     JSONArray arr=obj.getJSONArray("results");
+                     if(arr.size()==0)
+                     {
+                         return true;
+                     }
+                     JSONObject first=arr.getJSONObject(0);
+                     String updatedAt=first.getString("updatedAt");
+                     DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+                     LocalDateTime time= LocalDateTime.parse(updatedAt,format);
+                     LocalDateTime now= LocalDateTime.now();
+                     Interval it=new Interval(time.toDate().getTime(),now.toDate().getTime());
+                     int minutes = it.toPeriod().getMinutes();
+                     if(minutes>=15) //15 分钟 以内不重复发
+                     {
+                         return true;
+                     }
+                     return false;
+                 }
+             }
+         }).flatMap(new Function<Result<JSONObject>, Observable<GroupMessage>>() {
+             @Override
+             public Observable<GroupMessage> apply(Result<JSONObject> jsonObjectResult) throws Exception {
+                 System.out.println("flag map");
+                 return Observable.just(message);
+             }
+         }).map((GroupMessage s)->{ System.out.println("map thread   "+Thread.currentThread().getName()); return QQTextParse.create(s.getContent());})
                 .map((QQTextParse qtp)->{ICP icp=qtp.toIcp();  icp.qqgrouptext(message.getUserId()+"",message.getGroupId()+"",message.getContent()); return icp;})
                 .flatMap((ICP icp2)->{System.out.println("flatmap thread  "+Thread.currentThread().getName()); return DB.table("icp").saveRx(icp2); })
                 .map((Result<JSONObject> obj)->{
@@ -75,14 +120,14 @@ public class Main {
      public static void main(String args[])
      {
 
-          Date date=new Date();
-          date.setTime(1492847075);
-          System.out.println(date);
+            GroupMessage message=new GroupMessage(2,System.currentTimeMillis(),112233,"1人找车，太原回临县，下午五六点走13663580433");
+            new Main().handlerMessage(message);
 
-         QQData data=new QQData(1,System.currentTimeMillis(),"",1);
-         String json=JSON.toJSONString(data);
-         System.out.println(json);
-         return;
+         try {
+             Thread.sleep(10000);
+         } catch (InterruptedException e) {
+             e.printStackTrace();
+         }
 
 //          Main main=new Main();
 //          QQData data=new QQData(12522111,System.currentTimeMillis(),"12345645",123444);
