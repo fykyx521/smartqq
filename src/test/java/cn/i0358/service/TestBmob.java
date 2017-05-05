@@ -10,17 +10,18 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.io.Files;
 import com.scienjus.smartqq.model.GroupMessage;
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.Scheduler;
+import io.reactivex.*;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import junit.framework.TestCase;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -207,8 +208,61 @@ public class TestBmob extends TestCase {
         {
             e.printStackTrace();
         }
+    }
+    public void testDate()
+    {
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        DateTime.parse("2017-05-03 08:28:11",format);
+    }
+    public void testFirst()
+    {
+//        Observable<Result<JSONObject>> obj=DB.table("icp").where("qq" ,"2049474019").orderBy("createdAt",false).first();
+//        obj.subscribe(new Consumer<Result<JSONObject>>() {
+//            @Override
+//            public void accept(Result<JSONObject> jsonObjectResult) throws Exception {
+//                if(!jsonObjectResult.isError())
+//                {
+//                }
+//                System.out.println(jsonObjectResult.response().code());
+//                System.out.println(jsonObjectResult.response().body());
+//            }
+//        });
 
-
+        Observable<Result<JSONObject>> result=DB.table("icp").where("qq","2049474019").first();
+        result.filter(new Predicate<Result<JSONObject>>() {
+            @Override
+            public boolean test(Result<JSONObject> jsonObjectResult) throws Exception {
+                if(jsonObjectResult.isError())
+                {
+                    return false;
+                }else{
+                    JSONObject obj=jsonObjectResult.response().body();
+                    JSONArray arr=obj.getJSONArray("results");
+                    if(arr.size()==0)
+                    {
+                        return false;
+                    }
+                    JSONObject first=arr.getJSONObject(0);
+                    String updatedAt=first.getString("updatedAt");
+                    DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+                    org.joda.time.LocalDateTime time= org.joda.time.LocalDateTime.parse(updatedAt,format);
+                    org.joda.time.LocalDateTime now= org.joda.time.LocalDateTime.now();
+                    Interval it=new Interval(time.toDate().getTime(),now.toDate().getTime());
+                    int minutes = it.toPeriod().getMinutes();
+                    System.out.println("分种:"+minutes);
+                    if(minutes>=3)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        }).compose(new ObservableTransformer<Result<JSONObject>, Object>() {
+            @Override
+            public ObservableSource<Object> apply(Observable<Result<JSONObject>> upstream) {
+                return null;
+            }
+        });
     }
 
 }

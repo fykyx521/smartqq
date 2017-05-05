@@ -2,6 +2,7 @@ package com.scienjus.smartqq.model;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.joda.time.LocalDateTime;
 
 /**
  * 群消息.
@@ -28,6 +29,16 @@ public class GroupMessage {
     private long userId;
 
     private Font font;
+
+    public Long getDt() {
+        return dt;
+    }
+
+    public void setDt(Long dt) {
+        this.dt = dt;
+    }
+
+    private Long dt;//记录插入时间
 
     public GroupMessage(JSONObject json) {
         JSONArray cont = json.getJSONArray("content");
