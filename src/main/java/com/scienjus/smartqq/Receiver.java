@@ -52,12 +52,18 @@ public class Receiver {
             }
             try {
                 String groupName=getGroupName(msg);
-                if(groupName.indexOf("拼车")!=-1)
-                {
-                    new Main().handlerMessage(msg);
-                }
+//                if(msg.getGroupId()==409626965L)
+//                {
+//                    new Main().handlerMessage(msg);
+//                    System.out.println("[" + getTime() + "] [" + getGroupName(msg) + "] " + getGroupUserNick(msg) + "：" + msg.getContent());
+//                }
 
                 System.out.println("[" + getTime() + "] [" + getGroupName(msg) + "] " + getGroupUserNick(msg) + "：" + msg.getContent());
+                new Main().handlerMessage(msg);
+//                System.out.println(msg.getGroupId()+msg.getContent());
+
+
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

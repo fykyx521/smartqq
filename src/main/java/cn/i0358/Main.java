@@ -43,15 +43,18 @@ public class Main {
             GroupMessage mapmes=map.get(message.getUserId());
             if(mapmes!=null)
             {
+                System.out.println("nulll");
                 Long now=System.currentTimeMillis();
                 Interval it=new Interval(mapmes.getDt(),now);
                 if(it.toPeriod().getMinutes()>=15)
                 {
+                    System.out.println("true");
                     cansave=true;
                 }
             }else{
                 message.setDt(System.currentTimeMillis());
                 map.put(message.getUserId(),message);
+                System.out.println("true");
                 cansave=true;
             }
         }catch (Exception e)
@@ -72,8 +75,7 @@ public class Main {
          }
 //         System.out.println(Thread.currentThread().getName());
          Observable<Result<JSONObject>> result=DB.table("icp").where("qq",message.getUserId()+"").first();
-//         result.observeOn(Schedulers.newThread())
-          result
+         result.observeOn(Schedulers.newThread())
          .filter(new Predicate<Result<JSONObject>>() {
              @Override
              public boolean test(Result<JSONObject> jsonObjectResult) throws Exception {
