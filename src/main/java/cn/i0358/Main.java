@@ -74,46 +74,80 @@ public class Main {
              return;
          }
 //         System.out.println(Thread.currentThread().getName());
-         Observable<Result<JSONObject>> result=DB.table("icp").where("qq",message.getUserId()+"").first();
-         result.observeOn(Schedulers.newThread())
-         .filter(new Predicate<Result<JSONObject>>() {
-             @Override
-             public boolean test(Result<JSONObject> jsonObjectResult) throws Exception {
-                 System.out.println("filter");
-
-                 if(jsonObjectResult.isError())
-                 {
-                     return true;
-                 }else{
-                     JSONObject obj=jsonObjectResult.response().body();
-                     JSONArray arr=obj.getJSONArray("results");
-                     if(arr.size()==0)
-                     {
-                         return true;
-                     }
-                     JSONObject first=arr.getJSONObject(0);
-                     String updatedAt=first.getString("updatedAt");
-                     DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-                     LocalDateTime time= LocalDateTime.parse(updatedAt,format);
-                     LocalDateTime now= LocalDateTime.now();
-                     Interval it=new Interval(time.toDate().getTime(),now.toDate().getTime());
-                     int minutes = it.toPeriod().getMinutes();
-                     if(minutes>=15) //15 分钟 以内不重复发
-                     {
-                         return true;
-                     }
-                     return false;
-                 }
-             }
-         }).flatMap(new Function<Result<JSONObject>, Observable<GroupMessage>>() {
-             @Override
-             public Observable<GroupMessage> apply(Result<JSONObject> jsonObjectResult) throws Exception {
-                 System.out.println("flag map");
-                 return Observable.just(message);
-             }
-         }).map((GroupMessage s)->{ System.out.println("map thread   "+Thread.currentThread().getName()); return QQTextParse.create(s.getContent());})
+//         Observable<Result<JSONObject>> result=DB.table("icp").where("qq",message.getUserId()+"").orderBy("updateAt",false).rxfirst();
+//         result.observeOn(Schedulers.newThread())
+//         .filter(new Predicate<Result<JSONObject>>() {
+//             @Override
+//             public boolean test(Result<JSONObject> jsonObjectResult) throws Exception {
+//                 System.out.println("filter");
+//
+//                 if(jsonObjectResult.isError())
+//                 {
+//                     return true;
+//                 }else{
+//                     JSONObject obj=jsonObjectResult.response().body();
+//                     JSONArray arr=obj.getJSONArray("results");
+//                     if(arr.size()==0)
+//                     {
+//                         return true;
+//                     }
+//                     JSONObject first=arr.getJSONObject(0);
+//                     String updatedAt=first.getString("updatedAt");
+//                     DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+//                     LocalDateTime time= LocalDateTime.parse(updatedAt,format);
+//                     LocalDateTime now= LocalDateTime.now();
+//                     Interval it=new Interval(time.toDate().getTime(),now.toDate().getTime());
+//                     int minutes = it.toPeriod().getMinutes();
+//                     if(minutes>=15) //15 分钟 以内不重复发
+//                     {
+//                         return true;
+//                     }
+//                     return false;
+//                 }
+//             }
+//         }).flatMap(new Function<Result<JSONObject>, Observable<GroupMessage>>() {
+//             @Override
+//             public Observable<GroupMessage> apply(Result<JSONObject> jsonObjectResult) throws Exception {
+//                 System.out.println("flag map");
+//                 return Observable.just(message);
+//             }
+//         })
+                 Observable.just(message)
+                 .observeOn(Schedulers.io())
+                 .map((GroupMessage s)->{ System.out.println("map thread   "+Thread.currentThread().getName()); return QQTextParse.create(s.getContent());})
                 .map((QQTextParse qtp)->{ICP icp=qtp.toIcp();  icp.qqgrouptext(message.getUserId()+"",message.getGroupId()+"",message.getContent()); return icp;})
-                .flatMap((ICP icp2)->{System.out.println("flatmap thread  "+Thread.currentThread().getName()); return DB.table("icp").saveRx(icp2); })
+                .filter((ICP icp)->{
+                    try{
+                        JSONObject obj=DB.table("icp").where("phone",icp.getPhone()).orderBy("updatedAt",false).first();
+//                        JSONObject obj=jsonObjectResult.response().body();
+//                        System.out.println(icp.get);
+                        System.out.println(obj.toJSONString());
+                        JSONArray arr=obj.getJSONArray("results");
+                        if(arr.size()==0)
+                        {
+                            return true;
+                        }
+                        JSONObject first=arr.getJSONObject(0);
+                        String updatedAt=first.getString("updatedAt");
+                        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+                        LocalDateTime time= LocalDateTime.parse(updatedAt,format);
+                        LocalDateTime today=LocalDateTime.now();
+                        if(time.getDayOfMonth()==today.getDayOfMonth()&&today.getMonthOfYear()==time.getMonthOfYear())
+                        {
+                            System.out.println("今天已发布");
+                            return false;
+                        }
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                    System.out.println("今天已发布222222");
+                    return true;
+                    //
+                })
+//                 .flatMap((ICP icp)->{return DB.table("icp").where("phone",icp.getPeoplenum()).orderBy("updatedat",false).first();})
+//                 .filter((Result<JSONObject> obj)->{return false;})
+                .flatMap((ICP icp)->{ return DB.table("icp").saveRx(icp); })
                 .map((Result<JSONObject> obj)->{
                     System.out.println("map1 thread   "+Thread.currentThread().getName());
                     if(!obj.isError()) {
@@ -162,6 +196,10 @@ public class Main {
      public static void main(String args[])
      {
 
+//         JSONObject obj=DB.table("icp").where("phone",15513855060l).orderBy("updatedAt",false).first();
+//         System.out.println(obj.toJSONString());
+             GroupMessage message=new GroupMessage(2,System.currentTimeMillis(),112233,"1人找车，太原回临县，下午五六点走15513855060");
+            new Main().handlerMessage(message);
 //         Observable.just(123)
 //                 .map(new Function<Integer, Object>() {
 //
@@ -208,9 +246,8 @@ public class Main {
 //         } catch (InterruptedException e) {
 //             e.printStackTrace();
 //         }
-            GroupMessage message=new GroupMessage(2,System.currentTimeMillis(),112233,"1人找车，太原回临县，下午五六点走13663580433");
-            new Main().handlerMessage(message);
-            new Main().handlerMessage(message);
+
+//            new Main().handlerMessage(message);
 
 
          try {

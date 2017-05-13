@@ -312,7 +312,7 @@ public class QQTextParse {
                     stime=13;
 //                    this.time=this.time.withField(DateTimeFieldType.hourOfDay(),13);
                 }
-                if(this.content.contains("现在")||this.content.contains("随时走"))
+                if(this.content.contains("现在")||this.content.contains("随时走")||this.content.contains("马上"))
                 {
                     int minuteOfHour=this.time.getMinuteOfHour();
                     stime=this.time.getHourOfDay()+2;
@@ -322,7 +322,7 @@ public class QQTextParse {
             {
                 stime=12+stime;
             }
-            if(stime<=4&&this.mda==0&&stime>=0)
+            if(stime<=4&&this.mda==0&&stime>0)
             {
                 stime=12+stime;
             }

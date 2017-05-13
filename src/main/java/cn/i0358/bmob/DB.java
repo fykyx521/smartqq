@@ -58,12 +58,23 @@ public class DB {
      *  获取一行记录
      * @return
      */
-    public Observable<Result<JSONObject>> first()
+    public Observable<Result<JSONObject>> rxfirst()
     {
         this.page(1,1);
         Observable<Result<JSONObject>> json= this.rxget();
         return json;
     }
+    /**
+     *  获取一行记录
+     * @return
+     */
+    public JSONObject first()
+    {
+        this.page(1,1);
+        JSONObject json= this.get();
+        return json;
+    }
+
 
     public Observable<Result<JSONObject>> rxget()
     {
